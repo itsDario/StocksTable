@@ -1,0 +1,664 @@
+<html>
+
+<head>
+    <link href="selectize.css" rel="stylesheet">
+    <link href="tabulator.css" rel="stylesheet">
+    <link href="mycss.css" rel="stylesheet">
+    <script type="text/javascript" src="tabulator.js"></script>
+    <script type="text/javascript" src="jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="selectize.js"></script>
+    <!-- <script type="text/javascript" src="main.js"></script> -->
+</head>
+
+<body>
+
+    <!-- <p>search</p>
+    <div class="search">
+        <input class="SearchBar" id="search" type="text" placeholder="Search.." name="search" onkeyup="otherFilters()">
+    </div> -->
+
+    <form onchange="filters()" autocomplete="off">
+
+        <div class="filters">
+            <div>
+                <p>Strategies</p>
+                <select multiple id="Strategies" name="Schoice" autocomplete="false">
+                    <option value=""></option>
+                    <option value="Free Cash Flow Index">Free Cash Flow Index</option>
+                    <option value="TTAM 3 Factor Strategy">TTAM 3 Factor Strategy</option>
+                    <option value="Free Cash Flow Weighted Index">Free Cash Flow Weighted Index</option>
+                    <option value="Free Cash Flow Style Index">Free Cash Flow Style Index</option>
+                    <option value="Free Cash Flow Multi-Factor Index">Free Cash Flow Multi-Factor Index</option>
+                    <option value="Free Cash Flow Hedge Index">Free Cash Flow Hedge Index</option>
+                    <option value="Ex. Financials Benchmark">Ex. Financials Benchmark</option>
+                </select>
+            </div>
+            <div>
+                <p>Country</p>
+                <select multiple id="theCountry" name="Cchoice" autocomplete="false">
+                    <option value=""></option>
+                    <option value="United States">United States</option>
+                    <option value="Ex-US">Ex-US</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Ex-Japan">Ex-Japan</option>
+                    <option value="-">-</option>
+                </select>
+            </div>
+            <div>
+                <p>Region</p>
+                <select multiple id="theRegion" name="Rchoice" autocomplete="false">
+                    <option value=""></option>
+                    <option value="North America">North America</option>
+                    <option value="Global">Global</option>
+                    <option value="Asia Pacific">Asia Pacific</option>
+                    <option value="Europe">Europe</option>
+                    <option value="-">-</option>
+                </select>
+            </div>
+            <div>
+                <p>Market</p>
+                <select multiple id="Market" name="Mchoice" autocomplete="false">
+                    <option value=""></option>
+                    <option value="Developed">Developed</option>
+                    <option value="Emerging">Emerging</option>
+                    <option value="Global">Global</option>
+                </select>
+            </div>
+            <div>
+                <p>CapGroup</p>
+                <select multiple type="text" id="CapGroup" name="Capchoice" autocomplete="false">
+                    <option value=""></option>
+                    <option value="Large-Mid Cap">Large-Mid Cap</option>
+                    <option value="All Cap">All Cap</option>
+                    <option value="Large Cap">Large Cap</option>
+                    <option value="Mid Cap"> Mid Cap</option>
+                    <option value="Small Cap">Small Cap</option>
+                    <option value="Micro Cap">Micro Cap</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="dataCategories">
+            <p>Select Category</p>
+
+            <radio value="Category" onclick="categoryUpdate()">Category</radio>
+            <radio value="Overview" onclick="overviewUpdate()">Overview</radio>
+            <radio value="Performance" onclick="performanceUpdate()">Performance</radio>
+        </div>
+
+        <div class="rowCountAndSearch">
+
+            <!-- <div class="rowcountselector">
+                <div>Rows</div> comment this out
+            <select id="rows" name="rows" onchange="rowsUpdate()">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="75">75</option>
+                <option value="100">100</option>
+            </select>
+        </div> -->
+
+            <div class="search">
+                <!-- <p>Search </p> -->
+                <input class="SearchBar" id="search" type="text" placeholder="Search.." name="search">
+
+
+                <select id="choice" name="choice" size="1">
+                    <div class="item" data-value="awesome">awesome</div>
+                    <option value="Portfolio Name">Portfolio Name</option>
+                    <option value="Strategies">Strategies</option>
+                    <option value="Country">Country</option>
+                    <option value="Region">Region</option>
+                    <option value="Market">Market</option>
+                    <option value="Cap Group">Cap Group</option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <div id="example-table">table not loaded </div>
+
+    <script type="text/javascript">
+        var group = "Category";
+
+
+        //Selectize code
+        $('#Strategies').selectize({
+            plugins: ['remove_button'],
+            delimiter: ',',
+            persist: false, //width: 287px; top: 59px; left: 0px;
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input
+                }
+            }
+        });
+
+        $('#theCountry').selectize({
+            plugins: ['remove_button'],
+            delimiter: ',',
+            persist: false,
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input
+                }
+            }
+        });
+        $('#theRegion').selectize({
+            plugins: ['remove_button'],
+            delimiter: ',',
+            persist: false,
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input
+                }
+            }
+        });
+        $('#Market').selectize({
+            plugins: ['remove_button'],
+            delimiter: ',',
+            persist: false,
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input
+                }
+            }
+        });
+        $('#CapGroup').selectize({
+            plugins: ['remove_button'],
+            delimiter: ',',
+            persist: false,
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input
+                }
+            }
+        });
+
+        function populatetable() {
+            columnsUpdate();
+        };
+
+        function getMobileOperatingSystem() {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+            // Windows Phone must come first because its UA also contains "Android"
+            if (/windows phone/i.test(userAgent)) {
+                return "Windows Phone";
+            }
+
+            if (/android/i.test(userAgent)) {
+                return "Android";
+            }
+
+            // iOS detection from: http://stackoverflow.com/a/9039885/177710
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                return "iOS";
+            }
+
+            return "unknown";
+        }
+        var tabledata = [{}, ];
+
+        Tabulator.prototype.extendModule("mutator", "mutators", {
+            removeDigits: function (value, data, type, mutatorParams) {
+                if (value === parseFloat(value))
+                    return value.toFixed(2).toString() + "%";
+                else
+                    return value;
+                end
+            },
+        });
+
+        var table = new Tabulator("#example-table", { //create table 
+            height: "650px",
+            autoResize: true,
+            index: "Portfolio Name",
+            // formatter: "responsiveCollapse",
+            //data: tabledata,
+            layout: "fitColumns",
+            // pagination: "local",
+            // paginationSize: 10,
+            movableColumns: false,
+            // responsiveLayout: "hide", // enable responsive layouts
+            layoutColumnsOnNewData: true,
+            columnMinWidth: 100,
+            progressiveRender: true,
+            columns: [{
+                    title: "Portfolio Name",
+                    field: "Portfolio Name",
+                    minWidth: 300
+                },
+                {
+                    title: "Strategies",
+                    field: "Strategies",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Country",
+                    field: "Country",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Region",
+                    field: "Region",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Market",
+                    field: "Market",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Cap Group",
+                    field: "Cap Group",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Inception Date",
+                    field: "Inception Date",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Annualized Return",
+                    field: "Annualized Return",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Standard Deviation",
+                    field: "Standard Deviation",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Excess Return",
+                    field: "Excess Return",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Sortino Ratio",
+                    field: "Sortino Ratio",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Information Ratio",
+                    field: "Information Ratio",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Alpha",
+                    field: "Alpha",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Beta",
+                    field: "Beta",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Maximum Drawdown",
+                    field: "Maximum Drawdown",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Avg # of Holdings",
+                    field: "Avg # of Holdings",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Turnover",
+                    field: "Turnover",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "1 Month",
+                    field: "1 Month",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "3 Month",
+                    field: "3 Month",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "6 Month",
+                    field: "6 Month",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "1 Year",
+                    field: "1 Year",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "3 Year",
+                    field: "3 Year",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "5 Year",
+                    field: "5 Year",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "10 Year",
+                    field: "10 Year",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "Since Inception",
+                    field: "Since Inception",
+                    mutator: "removeDigits"
+                },
+                {
+                    title: "AS of Date",
+                    field: "AS of Date",
+                    mutator: "removeDigits"
+                },
+            ],
+
+            rowFormatter: function (row) {
+                var element = row.getElement(),
+                    data = row.getData(),
+                    rowTable, cellContents;
+                // console.log(data['Portfolio Name']);
+
+                //     //clear current row data
+                // while (element.firstChild) element.removeChild(element.firstChild);
+
+                //     //define a table layout structure and set width of row
+                rowTable = document.createElement("table")
+
+                rowTabletr = document.createElement("tr");
+
+                //add image on left of row
+                // cellContents = "<td><img src='/sample_data/row_formatter/" + data.image + "'></td>";
+
+                //add row data to to left most column. to be show when on smaller screens
+
+                var cellContents = "<td id='mobile'>"
+                if (group == "Category") {
+                    cellContents += "<div><strong>Strategies:</strong> " + data['Strategies'] +
+                        "</div><div id='category'><strong>Country:</strong> " + data['Country'] +
+                        "</div><div><strong>Region:</strong> " + data['Region'] +
+                        "</div><div><strong>Market:</strong> " + data['Market'] +
+                        "</div><div><strong>Cap Group:</strong> " + data['Cap Group'] +
+                        "</div>"
+                }
+                if (group == "Overview") {
+                    cellContents += "<div><strong>Inception Date:</strong> " + data['Inception Date'] +
+                        "</div><div><strong>Annualized Return:</strong> " + data['Annualized Return'] +
+                        "</div><div><strong>Standard Deviation:</strong> " + data['Standard Deviation'] +
+                        "</div><div><strong>Excess Return:</strong> " + data['Excess Return'] +
+                        "</div><div><strong>Sortino Ratio:</strong> " + data['Sortino Ratio'] +
+                        "</div><div><strong>Information Ratio:</strong> " + data['Information Ratio'] +
+                        "</div><div><strong>Alpha:</strong> " + data['Alpha'] +
+                        "</div><div><strong>Beta:</strong> " + data['Beta'] +
+                        "</div><div><strong>Maximum Drawdown:</strong> " + data['Maximum Drawdown'] +
+                        "</div><div><strong>Avg # of Holdings:</strong> " + data['Avg # of Holdings'] +
+                        "</div>"
+                }
+                if (group == "Performance") {
+                    cellContents += "<div><strong>Turnover:</strong> " + data['Turnover'] +
+                        "</div><div><strong>1 Month:</strong> " + data['1 Month'] +
+                        "</div><div><strong>3 Month:</strong> " + data['3 Month'] +
+                        "</div><div><strong>6 Month:</strong> " + data['6 Month'] +
+                        "</div><div><strong>1 Year:</strong> " + data['1 Year'] +
+                        "</div><div><strong>3 Year:</strong> " + data['3 Year'] +
+                        "</div><div><strong>5 Year:</strong> " + data['5 Year'] +
+                        "</div><div><strong>10 Year:</strong> " + data['10 Year'] +
+                        "</div><div><strong>Since Inception:</strong> " + data['Since Inception'] +
+                        "</div><div><strong>AS of Date:</strong> " + data['AS of Date'] +
+                        "</div>"
+                }
+
+                cellContents += "</td>"
+
+                rowTabletr.innerHTML = cellContents;
+
+                if (getMobileOperatingSystem() != "unknown") {
+                    rowTable.appendChild(rowTabletr);
+                    //append newly formatted contents to the row
+                    element.append(rowTable);
+                }
+            }
+
+        });
+
+        table.setData("data/data.json");
+
+        populatetable();
+
+        function filters() { //All filters and search
+            //console.log("my Function Ran");
+            table.clearFilter(); //removes previous filters to start with a clean slate
+
+            var sChoice = document.getElementById("Strategies"); //these are the filter choices
+            var cChoice = document.getElementById("theCountry");
+            var rChoice = document.getElementById("theRegion");
+            var mChoice = document.getElementById("Market");
+            var capChoice = document.getElementById("CapGroup");
+
+            var searchQuery = document.getElementById("search").value; //these two are for the search bar
+            var searchFilter = document.getElementById("choice").value;
+
+            // var filters = [{ field: searchFilter, type: "like", value: searchQuery }, []];
+            var filters = [{},
+                []
+            ];
+
+            for (var i = 0; i < sChoice.options.length; i++) {
+                if (sChoice.options[i].selected == true) {
+                    filters[1].push({
+                        field: "Strategies",
+                        type: "=",
+                        value: sChoice.options[i].value
+                    });
+                }
+            }
+
+            for (var i = 0; i < cChoice.options.length; i++) {
+                if (cChoice.options[i].selected == true) {
+                    filters[1].push({
+                        field: "Country",
+                        type: "=",
+                        value: cChoice.options[i].value
+                    });
+                }
+            }
+
+            for (var i = 0; i < rChoice.options.length; i++) {
+                if (rChoice.options[i].selected == true) {
+                    filters[1].push({
+                        field: "Region",
+                        type: "=",
+                        value: rChoice.options[i].value
+                    });
+                }
+            }
+
+            for (var i = 0; i < mChoice.options.length; i++) {
+                if (mChoice.options[i].selected == true) {
+                    filters[1].push({
+                        field: "Market",
+                        type: "=",
+                        value: mChoice.options[i].value
+                    });
+                }
+            }
+
+            for (var i = 0; i < capChoice.options.length; i++) {
+                if (capChoice.options[i].selected == true) {
+                    filters[1].push({
+                        field: "Cap Group",
+                        type: "=",
+                        value: capChoice.options[i].value
+                    });
+                }
+            }
+
+            if (searchQuery.length > 0) {
+                table.addFilter(searchFilter, "like", searchQuery);
+            }
+            console.log(filters);
+            table.addFilter(filters);
+        }
+
+        function rowsUpdate() { // changes the amount of rows you see per a page (not columns)
+            table.setPageSize(document.getElementById("rows").value);
+        }
+
+
+        function categoryUpdate() {
+            group = "Category";
+            columnsUpdate();
+            return false;
+        }
+
+        function overviewUpdate() {
+            group = "Overview";
+            columnsUpdate();
+            return false;
+        }
+
+        function performanceUpdate() {
+            group = "Performance";
+            columnsUpdate();
+            return false;
+        }
+        document.getElementsByTagName("BODY")[0].onresize = function () {
+            smllerWindow()
+        }; //set to call the methods to remove rows
+
+        function smllerWindow() {
+            columnsUpdate();
+        }
+
+        function columnsUpdate() {
+            // console.log(window.innerWidth);
+            table.fontSize = "22px";
+
+            if (getMobileOperatingSystem() == "unknown") {
+                if (group == "Category") {
+                    table.showColumn("Portfolio Name");
+                    table.showColumn("Strategies"); //group one Category
+                    table.showColumn("Country");
+                    table.showColumn("Region");
+                    table.showColumn("Market");
+                    table.showColumn("Cap Group");
+                    table.hideColumn("Inception Date"); //group two Overview
+                    table.hideColumn("Annualized Return");
+                    table.hideColumn("Standard Deviation");
+                    table.hideColumn("Excess Return");
+                    table.hideColumn("Sortino Ratio");
+                    table.hideColumn("Information Ratio");
+                    table.hideColumn("Alpha");
+                    table.hideColumn("Beta");
+                    table.hideColumn("Maximum Drawdown");
+                    table.hideColumn("Avg # of Holdings");
+                    table.hideColumn("Turnover");
+                    table.hideColumn("1 Month"); //group three performance
+                    table.hideColumn("3 Month");
+                    table.hideColumn("6 Month");
+                    table.hideColumn("1 Year");
+                    table.hideColumn("3 Year");
+                    table.hideColumn("5 Year");
+                    table.hideColumn("10 Year");
+                    table.hideColumn("Since Inception");
+                    table.hideColumn("AS of Date");
+                } else if (group == "Overview") {
+                    table.showColumn("Portfolio Name");
+                    table.hideColumn("Cap Group");
+                    table.hideColumn("Strategies"); //group one Category
+                    table.hideColumn("Country");
+                    table.hideColumn("Region");
+                    table.hideColumn("Market");
+                    table.showColumn("Inception Date"); //group two Overview
+                    table.showColumn("Annualized Return");
+                    table.showColumn("Standard Deviation");
+                    table.showColumn("Excess Return");
+                    table.showColumn("Sortino Ratio");
+                    table.showColumn("Information Ratio");
+                    table.showColumn("Alpha");
+                    table.showColumn("Beta");
+                    table.showColumn("Maximum Drawdown");
+                    table.showColumn("Avg # of Holdings");
+                    table.showColumn("Turnover");
+                    table.hideColumn("1 Month"); //group three performance
+                    table.hideColumn("3 Month");
+                    table.hideColumn("6 Month");
+                    table.hideColumn("1 Year");
+                    table.hideColumn("3 Year");
+                    table.hideColumn("5 Year");
+                    table.hideColumn("10 Year");
+                    table.hideColumn("Since Inception");
+                    table.hideColumn("AS of Date");
+                } else if (group == "Performance") {
+                    table.showColumn("Portfolio Name");
+                    table.hideColumn("Strategies"); //group one Category
+                    table.hideColumn("Country");
+                    table.hideColumn("Region");
+                    table.hideColumn("Market");
+                    table.hideColumn("Cap Group");
+                    table.hideColumn("Inception Date"); //group two Overview
+                    table.hideColumn("Annualized Return");
+                    table.hideColumn("Standard Deviation");
+                    table.hideColumn("Excess Return");
+                    table.hideColumn("Sortino Ratio");
+                    table.hideColumn("Information Ratio");
+                    table.hideColumn("Alpha");
+                    table.hideColumn("Beta");
+                    table.hideColumn("Maximum Drawdown");
+                    table.hideColumn("Avg # of Holdings");
+                    table.hideColumn("Turnover");
+                    table.hideColumn("Turnover");
+                    table.showColumn("1 Month"); //group three performance
+                    table.showColumn("3 Month");
+                    table.showColumn("6 Month");
+                    table.showColumn("1 Year");
+                    table.showColumn("3 Year");
+                    table.showColumn("5 Year");
+                    table.showColumn("10 Year");
+                    table.showColumn("Since Inception");
+                    table.showColumn("AS of Date");
+                }
+            } else {
+                table.hideColumn("Strategies"); //group one Category
+                table.hideColumn("Country");
+                table.hideColumn("Region");
+                table.hideColumn("Market");
+                table.hideColumn("Cap Group");
+                table.hideColumn("Inception Date"); //group two Overview
+                table.hideColumn("Annualized Return");
+                table.hideColumn("Standard Deviation");
+                table.hideColumn("Excess Return");
+                table.hideColumn("Sortino Ratio");
+                table.hideColumn("Information Ratio");
+                table.hideColumn("Alpha");
+                table.hideColumn("Beta");
+                table.hideColumn("Maximum Drawdown");
+                table.hideColumn("Avg # of Holdings");
+                table.hideColumn("Turnover");
+                table.hideColumn("Turnover");
+                table.hideColumn("1 Month"); //group three performance
+                table.hideColumn("3 Month");
+                table.hideColumn("6 Month");
+                table.hideColumn("1 Year");
+                table.hideColumn("3 Year");
+                table.hideColumn("5 Year");
+                table.hideColumn("10 Year");
+                table.hideColumn("Since Inception");
+                table.hideColumn("AS of Date");
+            }
+            // console.log("redrawStart");
+            table.redraw(true); //fixes spacing after column hiding
+        }
+    </script>
+</body>
+
+</html>
